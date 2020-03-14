@@ -31,19 +31,24 @@ def load_image(name, colorkey=None):
 
 
 def createMask(img):
-    maskedRGBImage = img
+    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV_FULL)
 
-    channel1Min = 27.000;
-    channel1Max = 105.000;
+    channel1Min = 0.259
+    channel1Max = 0.508
 
-    channel2Min = 101.000;
-    channel2Max = 255.000;
+    channel2Min = 0.578
+    channel2Max = 1.000
 
-    channel3Min = 54.000;
-    channel3Max = 89.000;
+    channel3Min = 0.000
+    channel3Max = 0.961
 
-    BW = ((img[:, :, 0] >= channel1Min) & (img[:, :, 0] <= channel1Max)) & (img[:, :, 1] >= channel2Min) & (
-                img[:, :, 1] <= channel2Max) & (img[:, :, 2] >= channel3Min) & (img[:, :, 2] <= channel3Max)
+    hsv_min = 255*np.array([channel1Min, channel2Min, channel3Min])
+    hsv_max = 255*np.array([channel1Max, channel2Max, channel3Max])
 
-    maskedRGBImage[np.tile(~BW[:, :, np.newaxis], (1, 1, 3))] = 0
-    return maskedRGBImage
+    mask = cv2.inRange(img_hsv, hsv_min, hsv_max)
+    imask = mask>0
+    masked_img = np.zeros_like(img, np.uint8)
+
+    masked_img[imask] = img[imask]
+
+    return masked_img
